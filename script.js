@@ -55,8 +55,8 @@ function fmtPct(value, decimals = 2) {
 }
 
 // ── cálculo principal ────────────────────────────────────────────
-function calcInvestment(initialAmount, totalMonths, maturityMonths, baseRateAnnual, ratePercent, type) {
-  const effectiveAnnual = (ratePercent / 100) * (baseRateAnnual / 100);
+function calcInvestment(initialAmount, totalMonths, maturityMonths, baseRateAnnual, ratePercent, type, fixedSpread = 0) {
+  const effectiveAnnual = (ratePercent / 100) * (baseRateAnnual / 100) + fixedSpread / 100;
   const monthlyRate = Math.pow(1 + effectiveAnnual, 1 / 12) - 1;
   const isExempt = type === 'lci_lca';
 
@@ -304,7 +304,21 @@ function updateIRHint(suffix) {
 
   const days = getValueInMonths('maturity' + suffix) * 30;
   const { label, cls } = irRateLabel(days);
-  hint.innerHTML = `alíquota por vencimento: <span class="aliq ${cls}">${label}</span>`;
+
+  let spreadInfo = '';
+  if (type === 'tesouro_selic') {
+    const spread = parseFloat(document.getElementById('spread' + suffix).value) || 0;
+    if (spread > 0) {
+      spreadInfo = ` · spread: <span class="aliq aliq-accent">+${fmtPct(spread)}</span>`;
+    }
+  }
+
+  hint.innerHTML = `alíquota por vencimento: <span class="aliq ${cls}">${label}</span>${spreadInfo}`;
+}
+
+function toggleSpreadField(suffix) {
+  const type = document.getElementById('type' + suffix).value;
+  document.getElementById('spreadField' + suffix).classList.toggle('visible', type === 'tesouro_selic');
 }
 
 // ── main ─────────────────────────────────────────────────────────
@@ -313,15 +327,19 @@ function calculate() {
   const totalMonths   = getValueInMonths('totalPeriod') || 120;
   const baseRate      = parseFloat(document.getElementById('baseRate').value)      || 14.5;
 
-  const invs = ['A', 'B'].map(s => ({
-    name:     document.getElementById('name'    + s).value || 'Investimento ' + s,
-    type:     document.getElementById('type'    + s).value,
-    rate:     parseFloat(document.getElementById('rate'    + s).value) || 100,
-    maturity: getValueInMonths('maturity' + s) || 1,
-  }));
+  const invs = ['A', 'B'].map(s => {
+    const type = document.getElementById('type' + s).value;
+    return {
+      name:        document.getElementById('name'    + s).value || 'Investimento ' + s,
+      type,
+      rate:        parseFloat(document.getElementById('rate'    + s).value) || 100,
+      maturity:    getValueInMonths('maturity' + s) || 1,
+      fixedSpread: type === 'tesouro_selic' ? (parseFloat(document.getElementById('spread' + s).value) || 0) : 0,
+    };
+  });
 
-  const resA = calcInvestment(initialAmount, totalMonths, invs[0].maturity, baseRate, invs[0].rate, invs[0].type);
-  const resB = calcInvestment(initialAmount, totalMonths, invs[1].maturity, baseRate, invs[1].rate, invs[1].type);
+  const resA = calcInvestment(initialAmount, totalMonths, invs[0].maturity, baseRate, invs[0].rate, invs[0].type, invs[0].fixedSpread);
+  const resB = calcInvestment(initialAmount, totalMonths, invs[1].maturity, baseRate, invs[1].rate, invs[1].type, invs[1].fixedSpread);
 
   renderResults(resA, invs[0].type, 'resultsA');
   renderResults(resB, invs[1].type, 'resultsB');
@@ -330,13 +348,16 @@ function calculate() {
 
 // ── live hint updates ────────────────────────────────────────────
 ['A', 'B'].forEach(s => {
-  document.getElementById('type'    + s).addEventListener('change', () => updateIRHint(s));
+  document.getElementById('type'    + s).addEventListener('change', () => { updateIRHint(s); toggleSpreadField(s); });
   document.getElementById('maturity'+ s).addEventListener('input',  () => updateIRHint(s));
+  document.getElementById('spread'  + s).addEventListener('input',  () => updateIRHint(s));
 });
 
-// inicializa hints
+// inicializa hints e visibilidade do spread
 updateIRHint('A');
 updateIRHint('B');
+toggleSpreadField('A');
+toggleSpreadField('B');
 
 // calcula ao apertar Enter em qualquer input
 document.querySelectorAll('input').forEach(input => {
