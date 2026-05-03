@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comparador de Investimentos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <header>
+    <div class="header-inner">
+      <div class="logo">comparador<span class="accent-dot">.</span></div>
+      <span class="header-sub">efeito do IR na rentabilidade real</span>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- parâmetros globais -->
+    <section class="global-section">
+      <div class="section-label">parâmetros globais</div>
+      <div class="global-grid">
+        <div class="field-group">
+          <label class="field-label" for="initialAmount">valor inicial</label>
+          <div class="input-wrap prefix-wrap">
+            <span class="input-affix">R$</span>
+            <input type="number" id="initialAmount" value="10000" min="1" step="100" placeholder="10000">
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="totalPeriod">período total de investimento</label>
+          <div class="period-field">
+            <input type="number" id="totalPeriod" value="10" min="1" step="1" placeholder="10">
+            <div class="unit-toggle">
+              <button class="unit-btn active" data-unit="anos" onclick="setUnit('totalPeriod', 'anos', this)">anos</button>
+              <button class="unit-btn" data-unit="meses" onclick="setUnit('totalPeriod', 'meses', this)">meses</button>
+            </div>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="baseRate">taxa CDI / Selic (a.a.)</label>
+          <div class="input-wrap suffix-wrap">
+            <input type="number" id="baseRate" value="14.5" step="0.01" min="0.01" placeholder="13.75">
+            <span class="input-affix">%</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- cards dos investimentos -->
+    <div class="investments-grid">
+
+      <!-- investimento A -->
+      <div class="investment-panel" id="panelA">
+        <div class="panel-header">
+          <input type="text" class="name-input" id="nameA" value="CDB 1 ano" placeholder="nome do investimento">
+          <span class="panel-index">A</span>
+        </div>
+        <div class="panel-fields">
+          <div class="field-group">
+            <label class="field-label" for="typeA">tipo</label>
+            <select id="typeA">
+              <option value="cdb" selected>CDB</option>
+              <option value="tesouro_selic">Tesouro Selic</option>
+              <option value="lci_lca">LCI / LCA (isento de IR)</option>
+            </select>
+          </div>
+          <div class="two-col">
+            <div class="field-group">
+              <label class="field-label" for="rateA">taxa (% CDI / Selic)</label>
+              <div class="input-wrap suffix-wrap">
+                <input type="number" id="rateA" value="110" step="0.1" min="0.1" placeholder="100">
+                <span class="input-affix">%</span>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="maturityA">vencimento</label>
+              <div class="period-field">
+                <input type="number" id="maturityA" value="1" min="1" step="1" placeholder="1">
+                <div class="unit-toggle">
+                  <button class="unit-btn active" data-unit="anos" onclick="setUnit('maturityA', 'anos', this)">anos</button>
+                  <button class="unit-btn" data-unit="meses" onclick="setUnit('maturityA', 'meses', this)">meses</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="ir-hint" id="irHintA"></div>
+        </div>
+        <div class="panel-results hidden" id="resultsA"></div>
+      </div>
+
+      <!-- investimento B -->
+      <div class="investment-panel" id="panelB">
+        <div class="panel-header">
+          <input type="text" class="name-input" id="nameB" value="Tesouro Selic 4 anos" placeholder="nome do investimento">
+          <span class="panel-index">B</span>
+        </div>
+        <div class="panel-fields">
+          <div class="field-group">
+            <label class="field-label" for="typeB">tipo</label>
+            <select id="typeB">
+              <option value="cdb">CDB</option>
+              <option value="tesouro_selic" selected>Tesouro Selic</option>
+              <option value="lci_lca">LCI / LCA (isento de IR)</option>
+            </select>
+          </div>
+          <div class="two-col">
+            <div class="field-group">
+              <label class="field-label" for="rateB">taxa (% CDI / Selic)</label>
+              <div class="input-wrap suffix-wrap">
+                <input type="number" id="rateB" value="100" step="0.1" min="0.1" placeholder="100">
+                <span class="input-affix">%</span>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="maturityB">vencimento</label>
+              <div class="period-field">
+                <input type="number" id="maturityB" value="4" min="1" step="1" placeholder="4">
+                <div class="unit-toggle">
+                  <button class="unit-btn active" data-unit="anos" onclick="setUnit('maturityB', 'anos', this)">anos</button>
+                  <button class="unit-btn" data-unit="meses" onclick="setUnit('maturityB', 'meses', this)">meses</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="ir-hint" id="irHintB"></div>
+        </div>
+        <div class="panel-results hidden" id="resultsB"></div>
+      </div>
+
+    </div>
+
+    <!-- botão calcular -->
+    <div class="calc-row">
+      <button class="btn-primary" id="calcBtn" onclick="calculate()">calcular</button>
+    </div>
+
+    <!-- tabela IR de referência -->
+    <details class="ir-table-details">
+      <summary class="ir-table-summary">tabela IR regressiva (renda fixa)</summary>
+      <div class="ir-table-body">
+        <div class="ir-row"><span class="ir-range">até 180 dias (≤ 6 meses)</span><span class="ir-rate danger">22,5%</span></div>
+        <div class="ir-row"><span class="ir-range">181 a 360 dias (7–12 meses)</span><span class="ir-rate warn">20,0%</span></div>
+        <div class="ir-row"><span class="ir-range">361 a 720 dias (13–24 meses)</span><span class="ir-rate dim">17,5%</span></div>
+        <div class="ir-row"><span class="ir-range">acima de 720 dias (&gt; 24 meses)</span><span class="ir-rate accent">15,0%</span></div>
+      </div>
+    </details>
+
+    <!-- comparativo -->
+    <div class="comparison-section hidden" id="comparisonSection"></div>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
